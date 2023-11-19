@@ -1,0 +1,43 @@
+version: '3.7'
+services:
+  tutorio-backend:
+    image: tutorio-backend:latest
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: tutorio-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/codepred?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+    depends_on:
+      - postgres
+    volumes:
+      - ./files:/var/tutorio-files
+    networks:
+      - tutorio-net
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:13
+    container_name: postgres-db
+    ports:
+      - "3309:5432"
+    volumes:
+      - tutorio-postgres-data:/var/lib/postgresql/data
+    networks:
+      - tutorio-net
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 1m
+      timeout: 10s
+      retries: 2
+
+volumes:
+  tutorio-postgres-data:
+
+networks:
+  tutorio-net:
+    name: tutorio-net
+
