@@ -13,7 +13,6 @@ import codepred.service.dto.AddServiceRequest;
 import codepred.tutor.dto.NewTutorPersonalDataRequest;
 import codepred.tutor.dto.NewTutorRequest;
 import codepred.tutor.dto.UpdateTutorRequest;
-import codepred.whitelist.WhitelistService;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -43,14 +42,11 @@ public class TutorControllerBean implements TutorController {
     private final TutorMapper tutorMapper;
     private final TutorService tutorService;
     private final BookMarkService bookMarkService;
-    private final WhitelistService whitelistService;
     private final EventService eventService;
 
     @Override
     public ResponseObject tutorRegisterAccount(@Valid NewTutorRequest NewTutorRequest) {
-        if(!whitelistService.canAddTutor(NewTutorRequest.getEmail())){
-            return new ResponseObject(HttpStatus.BAD_REQUEST,"EMAIL_IS_NOT_ON_WHITELIST",null,null);
-        }
+
 
         final var newTutor = tutorMapper.NewTutorRequestToTutor(NewTutorRequest);
         final var dbTutor = tutorService.createTutor(newTutor);
