@@ -24,10 +24,11 @@ public class InvoiceController {
         if(!EmailValidator.isValidEmail(invoicedata.getEmail())){
             return ResponseEntity.status(400).build();
         }
+        InvoiceEntity invoice = pdfService.saveInvoice(invoicedata);
 
-        final var pdfDocument = pdfService.generateInvoice(invoicedata);
+        final var pdfDocument = pdfService.generateInvoice(invoicedata, invoice);
         mailService.sendEmailWithAttachment(invoicedata.getEmail(), "Umowa kupna-sprzedaży", "Dziękuję za transakcję. W załączniku przesyłam umowę kupna-sprzedaży. \n \n "
-            + "Thank you for the transaction. Sale agreement document attached to message.", pdfDocument, invoicedata.getName());
+            + "Thank you for the transaction. Sale agreement document attached to message.", pdfDocument, invoicedata.getName(), invoice.getId().toString());
         return null;
     }
 

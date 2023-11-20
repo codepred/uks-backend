@@ -15,6 +15,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,8 @@ public class MailService {
 
     private final String host = "smtp.gmail.com";
 
-
+    @Autowired
+    private DocumentService documentService;
 
     private JavaMailSender mailSender;
 
@@ -38,7 +40,7 @@ public class MailService {
         this.mailSender = mailSender;
     }
 
-    public void sendEmailWithAttachment(String to, String subject, String body, byte[] pdfDocument, String name) {
+    public void sendEmailWithAttachment(String to, String subject, String body, byte[] pdfDocument, String name, String id) {
 
         try {
             Properties props = new Properties();
@@ -64,7 +66,7 @@ public class MailService {
             MimeBodyPart attachmentPart = new MimeBodyPart();
             DataSource source = new ByteArrayDataSource(pdfDocument, "application/pdf");
             attachmentPart.setDataHandler(new DataHandler(source));
-            attachmentPart.setFileName(name + ".pdf");
+            attachmentPart.setFileName(id + "-" + documentService.getCurrentMonth() + ".pdf");
 
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPart);
