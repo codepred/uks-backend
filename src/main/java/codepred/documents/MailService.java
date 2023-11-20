@@ -66,7 +66,7 @@ public class MailService {
             MimeBodyPart attachmentPart = new MimeBodyPart();
             DataSource source = new ByteArrayDataSource(pdfDocument, "application/pdf");
             attachmentPart.setDataHandler(new DataHandler(source));
-            attachmentPart.setFileName(id + "-" + documentService.getCurrentMonth() + ".pdf");
+            attachmentPart.setFileName(name + ".pdf");
 
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPart);

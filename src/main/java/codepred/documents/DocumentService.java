@@ -61,7 +61,7 @@ public class DocumentService {
         context.setVariable("invoiceData", invoiceData);
         context.setVariable("public_domain",
                             "https://icons.iconarchive.com/icons/tribalmarkings/colorflow/128/signature-icon.png");
-
+        context.setVariable("invoiceNumber", "Sale agreement nr " + invoice.getId() + "-" + getCurrentMonth());
         processedHtml = templateEngine.process("invoice_template", context);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();

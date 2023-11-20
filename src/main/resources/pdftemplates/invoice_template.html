@@ -111,16 +111,20 @@
   </style>
 </head>
 <body>
-<div style="width: 100%; display: flex; justify-content: flex-end;">
-  <div style="text-align: right;">
+
+<div id="wrapper1" style="display: flex; margin-bottom: 20px">
+  <div id="div11">
+   <span style="font-size: 12px" th:utext="${invoiceNumber} ?: ''">
+   </span>
+  </div>
+  <div id="div22" style="text-align: right; margin-left: 70%" >
     <div style="font-size: 12px; display: flex; justify-content: flex-end;">
       Poznań, <span th:utext="${date} ?: ''"></span><br/>
-    </div>
-    <div style="font-size: 12px;">
       (miejscowość, data zawarcia umowy)
     </div>
   </div>
 </div>
+
 
 
 <div
