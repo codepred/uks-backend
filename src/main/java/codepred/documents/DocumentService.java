@@ -1,6 +1,6 @@
 package codepred.documents;
 
-import codepred.payment.Payment;
+
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
 import java.io.ByteArrayOutputStream;
@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -48,10 +49,44 @@ public class DocumentService {
         context.setVariable("place", invoiceData.getStreet() + " " + invoiceData.getCity());
         context.setVariable("date", invoiceData.getDate());
         context.setVariable("paymentType", invoiceData.getPaymentMethod());
+        context.setVariable("buyerName", "GOT’EM STORE Mikołaj Maszner");
+        context.setVariable("buyerAddress", "Żurawia 46");
+        context.setVariable("buyerAddress1", "62-002 Złotniki");
+        context.setVariable("buyerNip", "NIP: 9721301624'");
+
+        context.setVariable("sellerName", "Imię i nazwisko: " + invoiceData.getUsername());
+        context.setVariable("sellerAddress", "Adres: " + invoiceData.getStreet() + " " + invoiceData.getAptNumber() + ", " + invoiceData.getZip() + " " + invoiceData.getCity());
+        context.setVariable("sellerEmail", "Email: " + invoiceData.getEmail());
+        context.setVariable("invoiceData", invoiceData);
+        context.setVariable("public_domain","https://icons.iconarchive.com/icons/tribalmarkings/colorflow/128/signature-icon.png");
+
         processedHtml = templateEngine.process("invoice_template", context);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ITextRenderer renderer = new ITextRenderer();
+        final ITextRenderer renderer = getiTextRenderer(processedHtml);
+        renderer.createPDF(out);
+
+        String filePath = invoicePath + invoice.getId() + ".pdf";
+
+        Path directoryPath = Paths.get(invoicePath);
+        try {
+            Files.createDirectories(directoryPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try (OutputStream outputStream = new FileOutputStream(filePath)) {
+            renderer.createPDF(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return out.toByteArray();
+    }
+
+    @NotNull
+    private static ITextRenderer getiTextRenderer(String processedHtml) throws DocumentException, IOException {
+        final ITextRenderer renderer = new ITextRenderer();
         ITextFontResolver fontResolver = renderer.getFontResolver();
         fontResolver.addFont("fonts/LiberationSans-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         fontResolver.addFont("fonts/LiberationSans-Bold.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
@@ -60,28 +95,7 @@ public class DocumentService {
 
         renderer.setDocumentFromString(processedHtml);
         renderer.layout();
-        renderer.createPDF(out);
-
-        String filePath = invoicePath + invoice.getId() + ".pdf";
-
-// Create directories if they don't exist
-        Path directoryPath = Paths.get(invoicePath);
-        try {
-            Files.createDirectories(directoryPath);
-        } catch (IOException e) {
-            // Handle directory creation exception
-            e.printStackTrace();
-        }
-
-// Write the PDF content to the file
-        try (OutputStream outputStream = new FileOutputStream(filePath)) {
-            renderer.createPDF(outputStream); // Write the generated PDF content to the file
-        } catch (IOException e) {
-            // Handle file writing exception
-            e.printStackTrace();
-        }
-
-        return out.toByteArray();
+        return renderer;
     }
 
 }

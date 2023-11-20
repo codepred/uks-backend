@@ -1,5 +1,6 @@
 package codepred.documents;
 
+import codepred.config.EmailValidator;
 import com.lowagie.text.DocumentException;
 import java.io.IOException;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,13 @@ public class InvoiceController {
 
     @PostMapping("/invoice/create-pdf")
     public ResponseEntity sendEmail(@RequestBody InvoiceData invoicedata) throws IOException, DocumentException {
+        if(!EmailValidator.isValidEmail(invoicedata.getEmail())){
+            return ResponseEntity.status(400).build();
+        }
+
         final var pdfDocument = pdfService.generateInvoice(invoicedata);
-        mailService.sendEmailWithAttachment("kaczmarek.jacek10@gmail.com", "Umowa kupna-sprzedaży", "Witaj,"
-            + "w załączniku przesyłamy dokument kupna-sprzedaży. Pozdrawiamy, Zespół buty", pdfDocument);
+        mailService.sendEmailWithAttachment(invoicedata.getEmail(), "Umowa kupna-sprzedaży", "Dziękuję za transakcję. W załączniku przesyłam umowę kupna-sprzedaży. \n \n "
+            + "Thank you for the transaction. Sale agreement document attached to message.", pdfDocument, invoicedata.getName());
         return null;
     }
 

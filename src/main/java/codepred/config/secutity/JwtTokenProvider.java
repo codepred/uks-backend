@@ -1,6 +1,6 @@
 package codepred.config.secutity;
 
-import codepred.account.AppUserRole;
+
 import codepred.exception.AuthenticationException;
 import codepred.exception.CustomException;
 import io.jsonwebtoken.Claims;
@@ -59,25 +59,7 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public String createToken(String email, List<AppUserRole> appUserRoles) {
-        //appUserRoles.add(AppUserRole.ROLE_CLIENT);
-        Claims claims = Jwts.claims().setSubject(email);
-        claims.put("auth", appUserRoles.stream().map(
-                s ->
-                        new SimpleGrantedAuthority(
-                                s.getAuthority())).filter(Objects::nonNull)
-                .collect(Collectors.toList()));
 
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
-
-        return Jwts.builder()//
-                .setClaims(claims)//
-                .setIssuedAt(now)//
-                .setExpiration(validity)//
-                .signWith(SignatureAlgorithm.HS256, secretKey)//
-                .compact();
-    }
 
     public Authentication getAuthentication(String token) {
         UserDetails userDetails = myUserDetails.loadUserByUsername(getUsername(token));

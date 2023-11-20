@@ -8,6 +8,7 @@ import lombok.Data;
 public class InvoiceData {
 
     private String username;
+    private String email;
     private String date;
     private String name;
     private String street;

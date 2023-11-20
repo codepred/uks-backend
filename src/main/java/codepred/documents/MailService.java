@@ -38,7 +38,7 @@ public class MailService {
         this.mailSender = mailSender;
     }
 
-    public void sendEmailWithAttachment(String to, String subject, String body, byte[] pdfDocument) {
+    public void sendEmailWithAttachment(String to, String subject, String body, byte[] pdfDocument, String name) {
 
         try {
             Properties props = new Properties();
@@ -64,7 +64,7 @@ public class MailService {
             MimeBodyPart attachmentPart = new MimeBodyPart();
             DataSource source = new ByteArrayDataSource(pdfDocument, "application/pdf");
             attachmentPart.setDataHandler(new DataHandler(source));
-            attachmentPart.setFileName("generated_invoice.pdf");
+            attachmentPart.setFileName(name + ".pdf");
 
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPart);

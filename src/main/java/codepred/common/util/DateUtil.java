@@ -1,6 +1,6 @@
 package codepred.common.util;
 
-import codepred.payment.dto.ValueDto;
+
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -44,14 +44,6 @@ public class DateUtil {
         }
     }
 
-    public static List<ValueDto> convertToLocalTimeList(List<LocalDateTime> dateTimeList) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        List<ValueDto> timeStrings = dateTimeList.stream()
-            .map(dateTime -> new ValueDto(dateTime.format(formatter)))
-            .collect(Collectors.toList());
-
-        return timeStrings;
-    }
 
     public static String convertToEndOfTheDay(String dateString) {
         try {

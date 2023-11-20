@@ -2,249 +2,223 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:temporals="urn:java:java.time.temporal">
 <head>
-    <meta charset="UTF-8"/>
-    <title>Faktura</title>
-    <style>
+  <meta charset="UTF-8"/>
+  <title>Faktura</title>
+  <style>
 
-        @font-face {
-            font-family: 'Liberation Sans';
-            src: url('fonts/LiberationSans-Regular.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
+    @font-face {
+      font-family: 'Liberation Sans';
+      src: url('fonts/LiberationSans-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
 
-        @font-face {
-            font-family: 'Liberation Sans';
-            src: url('fonts/LiberationSans-Bold.ttf') format('truetype');
-            font-weight: bold;
-            font-style: normal;
-        }
+    @font-face {
+      font-family: 'Liberation Sans';
+      src: url('fonts/LiberationSans-Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+    }
 
-        @font-face {
-            font-family: 'Liberation Sans';
-            src: url('fonts/LiberationSans-Italic.ttf') format('truetype');
-            font-weight: normal;
-            font-style: italic;
-        }
+    @font-face {
+      font-family: 'Liberation Sans';
+      src: url('fonts/LiberationSans-Italic.ttf') format('truetype');
+      font-weight: normal;
+      font-style: italic;
+    }
 
-        @font-face {
-            font-family: 'Liberation Sans';
-            src: url('fonts/LiberationSans-BoldItalic.ttf') format('truetype');
-            font-weight: bold;
-            font-style: italic;
-        }
+    @font-face {
+      font-family: 'Liberation Sans';
+      src: url('fonts/LiberationSans-BoldItalic.ttf') format('truetype');
+      font-weight: bold;
+      font-style: italic;
+    }
 
-        /* Use Liberation Sans as the primary font for the body */
-        body {
-            font-family: 'Liberation Sans', Arial, sans-serif;
-        }
+    body {
+      font-family: 'Liberation Sans', Arial, sans-serif;
+    }
 
-        /* Dodaj inne style CSS, jeśli potrzebujesz */
-        .info-table {
-            display: table;
-            width: 100%;
-            border-collapse: collapse;
-        }
+    .info-table {
+      display: table;
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-        .info-table tr {
-            display: table-row;
-        }
+    .info-table tr {
+      display: table-row;
+    }
 
-        .info-table td {
-            display: table-cell;
-            padding: 5px;
-            vertical-align: top;
-        }
+    .info-table td {
+      display: table-cell;
+      padding: 5px;
+      vertical-align: top;
+    }
 
-        .info-table .seller-info, .info-table .buyer-info {
-            width: 50%;
-        }
+    .info-table .seller-info, .info-table .buyer-info {
+      width: 50%;
+    }
 
-        .info-table .seller-info p, .info-table .buyer-info p {
-            margin: 0;
-        }
+    .info-table .seller-info p, .info-table .buyer-info p {
+      margin: 0;
+    }
 
-        .info-table .info-table-row {
-            display: table-row;
-        }
+    .info-table .info-table-row {
+      display: table-row;
+    }
 
-        .info-table .info-table-cell {
-            display: table-cell;
-        }
+    .info-table .info-table-cell {
+      display: table-cell;
+    }
 
-        .new-paragraph {
-            font-weight: bold;
-        }
+    .invoice-table {
+      width: 100%;
+      border-collapse: initial;
+      font-size: 12px;
+      text-align: center;
+    }
 
-        /* Dodaj styl dla całej tabeli */
-        .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px; /* Zmniejsz rozmiar czcionki */
-        }
+    .invoice-table th {
+      background-color: #f2f2f2;
+      text-align: center;
+      padding: 8px;
+    }
 
-        /* Dodaj styl dla nagłówków tabeli */
-        .invoice-table th {
-            background-color: #f2f2f2;
-            text-align: left;
-            padding: 8px;
-        }
+    .invoice-table td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
 
-        /* Dodaj styl dla komórek tabeli */
-        .invoice-table td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
+    .invoice-table td:last-child {
+      border-bottom: none;
+    }
 
-        /* Dodaj styl dla ostatniej komórki tabeli w każdym wierszu */
-        .invoice-table td:last-child {
-            border-bottom: none;
-        }
+    .invoice-table th.nazwa,
+    .invoice-table td.nazwa {
+      width: 30%;
+    }
 
-        .invoice-table th.nazwa,
-        .invoice-table td.nazwa {
-            width: 30%; /* Set the desired width here, adjust as needed */
-        }
+    #wrapper {
+    }
 
+    #div1 {
+      display: inline-block;
+    }
 
-        .value-summary {
-            text-align: right;
-        }
+    #div2 {
+      display: inline-block;
+    }
 
-        .value-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .value-label {
-            font-weight: normal;
-        }
-
-        .value {
-            font-weight: bold;
-        }
-
-        .currency {
-            font-weight: bold;
-        }
-        .check-value {
-            grid-column: span 2;
-        }
-    </style>
+  </style>
 </head>
 <body>
-<h2>Faktura numer: <span th:utext="${paymentId} ?: ''"></span></h2>
-
-<p class="new-paragraph">Data wystawienia:
-    <span th:utext="${place} ?: ''"></span>,
-    <span th:utext="${date} ?: ''"></span>,
-</p>
-<p class="new-paragraph">Data sprzedaży: <span
-        th:utext="${date} ?: ''"></span></p>
-<p class="new-paragraph">Termin Płatności: <span
-        th:utext="${date} ?: ''"></span></p>
-<p class="new-paragraph">Płatność: <span
-    th:utext="${paymentType} ?: ''"></span></p>
+<div style="width: 100%; display: flex; justify-content: flex-end;">
+  <div style="text-align: right;">
+    <div style="font-size: 12px; display: flex; justify-content: flex-end;">
+      Poznań, <span th:utext="${date} ?: ''"></span><br/>
+    </div>
+    <div style="font-size: 12px;">
+      (miejscowość, data zawarcia umowy)
+    </div>
+  </div>
+</div>
 
 
-<!--<div class="info-table">-->
-<!--    <div class="info-table-row">-->
-<!--        <div class="info-table-cell seller-info">-->
-<!--            <h2>Sprzedawca:</h2>-->
-<!--            <p>-->
-<!--                <span th:utext="${payment?.user.tutorDetails.getCompanyName()} ?: ''"></span><br/>-->
-<!--                <span th:utext="${payment?.sellerNameAndSurname} ?: ''"></span><br/>-->
-<!--                <span th:utext="${payment?.user.tutorDetails.getStreet()} ?: ''"></span><br/>-->
-<!--                <span th:utext="${payment?.user.tutorDetails.getPostCode()} ?: ''"></span>-->
-<!--                <span th:utext="${payment?.user.tutorDetails.getPlace()} ?: ''"></span><br/>-->
-<!--                NIP: <span th:utext="${payment?.sellerNip} ?: ''"></span>-->
-<!--            </p>-->
-<!--        </div>-->
-<!--        <div class="info-table-cell buyer-info">-->
-<!--            <h2>Nabywca:</h2>-->
-<!--            <p>-->
-<!--                <span th:utext="${payment?.buyerName} ?: ''"></span><br/>-->
-<!--                <span th:utext="${payment.street} ?: ''"></span><br/>-->
-<!--                <span th:utext="${payment.zip} ?: ''"></span>-->
-<!--                <span th:utext="${payment?.city} ?: ''"></span><br/>-->
-<!--                <span th:if="${payment?.nip != null and payment?.nip != ''}">-->
-<!--                NIP: <span th:utext="${payment?.nip}"></span></span>-->
-<!--            </p>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
+<div
+    style="width: 100%; display: flex; justify-content: center; align-items: center; font-weight: 600; text-align: center;">
+  UMOWA KUPNA-SPRZEDAŻY
+</div>
+
+<div class="info-table">
+  <div class="info-table-row">
+    <div class="info-table-cell seller-info">
+      <h5>Kupujący:</h5>
+      <p>
+        <span style="font-size: 12px" th:utext="${buyerName} ?: ''"></span><br/>
+        <span style="font-size: 12px" th:utext="${buyerAddress} ?: ''"></span><br/>
+        <span style="font-size: 12px" th:utext="${buyerAddress1} ?: ''"></span><br/>
+        <span style="font-size: 12px" th:utext="${buyerNip} ?: ''"></span>
+      </p>
+    </div>
+    <div class="info-table-cell buyer-info">
+      <h5>Sprzedający:</h5>
+      <p>
+        <span style="font-size: 12px" th:utext="${sellerName} ?: ''"></span><br/>
+        <span style="font-size: 12px" th:utext="${sellerAddress} ?: ''"></span><br/>
+        <span style="font-size: 12px" th:utext="${sellerEmail} ?: ''"></span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<br></br>
+<div
+    style="width: 100%; display: flex; justify-content: center; align-items: center; font-weight: 600; text-align: center;">
+  § 1
+</div>
+
+<p style="font-size: 12px">Sprzedający sprzedaje, a Kupujący kupuje następujące rzeczy:</p>
+
+<table class="invoice-table">
+  <tr>
+    <th class="nazwa">Nazwa i opis przedmiotu</th>
+    <th>Ilość</th>
+    <th>Cenna brutto/szt.</th>
+  </tr>
+  <tr th:each="product, index : ${invoiceData?.productList}">
+    <td class="nazwa" th:utext="${product?.name} ?: ''"></td>
+    <td th:utext="${product?.amount} ?: ''"></td>
+    <td th:utext="${product?.price} ?: ''"></td>
+  </tr>
+</table>
+<p style="font-size: 12px">Sprzedawca oświadcza, że sprzedawane przedmioty stanowią jego własność i
+  nie są obciążone
+  prawami na rzecz osób trzecich.</p>
+<div
+    style="width: 100%; display: flex; justify-content: center; align-items: center; font-weight: 600; text-align: center;">
+  § 2
+</div>
+
+<p style="font-size: 12px">1. Kupujący zapłaci Sprzedawcy za ww. przedmioty cenę brutto w wysokość:
+  1000PLN</p>
+<p style="font-size: 12px">2. Sprzedający wybrał zapłatę przez Kupującego następującą formą
+  płatności: </p>
+
+<div
+    style="width: 100%; display: flex; justify-content: center; align-items: center; font-weight: 600; text-align: center;">
+  § 3
+</div>
+<p style="font-size: 12px">1. W sprawach nieuregulowanych niniejszą umową mają zastosowanie przepisy
+  kodeksu cywilnego.</p>
+<p style="font-size: 12px">2. Zmiana umowy wymaga formy pisemnej pod rygorem nieważności.</p>
+<p style="font-size: 12px">3. Sprzedawane towary są uznawane za używane.</p>
+<p style="font-size: 12px">4. Kupujący kupuje, a sprzedający sprzedaje produkty w stanie wolnym od
+  wad.</p>
+<p style="font-size: 12px">5. Przeniesienie własności towaru następuje z chwilą jego wydania
+  Kupującemu.</p>
+<div
+    style="width: 100%; display: flex; justify-content: center; align-items: center; font-weight: 600; text-align: center;">
+  § 4
+</div>
+<p style="font-size: 12px">Umowę sporządzono w dwóch jednobrzmiących egzemplarzach, po jednym dla
+  każdej ze stron.</p>
+
+<div id="wrapper" style="display: flex; margin-bottom: 20px">
+  <div id="div1">
+    <img th:src="@{|${public_domain}|}" />
+    <div>
+      Sprzedawca
+    </div>
+  </div>
+  <div id="div2" style="text-align: right; margin-left: 70%" >
+    <div style="font-weight: bold;">
+      Maszner
+    </div>
+    <div>
+      Kupujący
+    </div>
+  </div>
+</div>
 
 
-<!--<p class="new-paragraph">Numer konta:</p>-->
-<!--<p><span th:utext="${payment?.sellerBankAccountNumber} ?: ''"></span><br/>-->
-<!--    <span th:utext="${payment?.sellerBankName} ?: ''"></span></p>-->
-
-
-<!--<table class="invoice-table">-->
-<!--    <tr>-->
-<!--        <th>LP</th>-->
-<!--        <th class="nazwa">Nazwa</th>-->
-<!--        <th>Ilość</th>-->
-<!--        <th>Jednostka</th>-->
-<!--        <th>Cena netto</th>-->
-<!--        <th>VAT</th>-->
-<!--        <th>Wartość netto</th>-->
-<!--        <th>Kwota VAT</th>-->
-<!--        <th>Wartość brutto</th>-->
-<!--    </tr>-->
-<!--    <tr th:each="invoice, index : ${payment?.invoices}">-->
-<!--        <td th:text="${index.index + 1}"></td>-->
-<!--        <td class="nazwa" th:utext="${invoice?.name} ?: ''"></td>-->
-<!--        <td th:utext="${invoice?.amount} ?: ''"></td>-->
-<!--        <td th:utext="${invoice?.unit == 'pieces' ? 'szt.' : (invoice?.unit == 'hours' ? 'godz.' : '')}"></td>-->
-<!--        <td class="check-value" th:utext="${priceNettoValues[index.index]} ?: ''"></td>-->
-<!--        <td th:utext="${invoice?.vat == 'vatExempt'? 'zw.' : invoice?.vat + '%'}"></td>-->
-<!--        <td class="check-value" th:utext="${priceNettoValues[index.index]} ?: ''"></td>-->
-<!--        <td class="check-value" th:utext="${vatValues[index.index]} ?: ''"></td>-->
-<!--        <td class="check-value" th:utext="${priceBruttoValues[index.index]} ?: ''"></td>-->
-<!--        <td class="check-value" colspan="2"></td>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--        <td colspan="1"><strong>Razem:</strong></td>-->
-<!--        <td colspan="5"></td>-->
-<!--        <td th:utext="${summaryNetPrice} ?: ''"></td>-->
-<!--        <td th:utext="${summaryVat} ?: ''"></td>-->
-<!--        <td th:utext="${summaryBruttoPrice} ?: ''"></td>-->
-<!--        <td colspan="2"></td>-->
-<!--    </tr>-->
-<!--</table>-->
-<!--<div class="value-summary" style="margin-top: 20px;">-->
-<!--    <div class="value-line">-->
-<!--        <span class="value-label">Wartość netto:</span>-->
-<!--        <span class="value" th:utext="${summaryNetPrice}?: ''"></span>-->
-<!--        <span class="currency">zł</span>-->
-<!--    </div>-->
-<!--    <div class="value-line">-->
-<!--        <span class="value-label">Wartość VAT:</span>-->
-<!--        <span class="value" th:utext="${summaryVat}?: ''"></span>-->
-<!--        <span class="currency">zł</span>-->
-<!--    </div>-->
-<!--    <div class="value-line">-->
-<!--        <span class="value-label">Wartość brutto:</span>-->
-<!--        <span class="value" th:utext="${summaryBruttoPrice}?: ''"></span>-->
-<!--        <span class="currency">zł</span>-->
-<!--    </div>-->
-<!--</div>-->
-
-<!--<br/>-->
-
-<!--<p th:if="${not #strings.isEmpty(payment?.vatExemptionReason)}" class="new-paragraph">-->
-<!--    <span class="value-label">Podstawa zwolnienia z podatku VAT:</span><br/>-->
-<!--    <span th:utext="${payment?.vatExemptionReason == 'vatExemptionLowRegulation' ? 'Zwolnienie na mocy rozporządzenia MF (art. 82 ust 3 ustawy o VAT)' :-->
-<!--                    (payment?.vatExemptionReason == 'vatExemptionLowRevenue' ? 'Zwolnienie ze względu na nieprzekroczenie 200 000 pln obrotu (art. 113 ust 1 i 9 ustawy o VAT)' :-->
-<!--                    (payment?.vatExemptionReason == 'vatExemptionWorkField' ? 'Zwolnienie ze względu na rodzaj prowadzonej działalności (art. 43 ust 1 ustawy o VAT)' : ''))}">-->
-<!--    </span>-->
-<!--</p>-->
-
-<!--<br/><br/><br/>-->
-
-<!--<p class="new-paragraph">Kwota opłacona: <span th:utext="${amountPaid} ?: ''"></span> zł</p>-->
-<!--<p class="new-paragraph">Do zapłaty: <span th:utext="${toPay} ?: ''"></span> zł</p>-->
 </body>
 </html>
