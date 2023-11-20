@@ -28,9 +28,6 @@ public class MailService {
     @Value("${spring.mail.password}")
     private String password;
 
-    @Value("${invoice_path}")
-    private String invoicePath;
-
     private final String host = "smtp.gmail.com";
 
 

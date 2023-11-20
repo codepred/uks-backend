@@ -134,119 +134,117 @@
     </style>
 </head>
 <body>
-<h2>Faktura numer: <span th:utext="${payment?.invoiceNumber} ?: ''"></span></h2>
+<h2>Faktura numer: <span th:utext="${paymentId} ?: ''"></span></h2>
 
 <p class="new-paragraph">Data wystawienia:
-    <span th:utext="${payment?.user.tutorDetails.getPlace() ?: ''}"></span>,
-    <span th:utext="${payment?.dateOfIssue != null ? #temporals.format(payment?.dateOfIssue, 'dd-MM-yyyy') : ''}"></span>
+    <span th:utext="${place} ?: ''"></span>,
+    <span th:utext="${date} ?: ''"></span>,
 </p>
 <p class="new-paragraph">Data sprzedaży: <span
-        th:utext="${#temporals.format(payment?.dateOfSale, 'dd-MM-yyyy')} ?: ''"></span></p>
+        th:utext="${date} ?: ''"></span></p>
 <p class="new-paragraph">Termin Płatności: <span
-        th:utext="${#temporals.format(dueDate, 'dd-MM-yyyy')} ?: ''"></span></p>
-<p class="new-paragraph">Płatność:
-    <span th:if="${payment?.getTypeOfPayment() == 'transfer'}">Przelew</span>
-    <span th:if="${payment?.getTypeOfPayment() == 'cash'}">Gotówka</span>
-</p>
+        th:utext="${date} ?: ''"></span></p>
+<p class="new-paragraph">Płatność: <span
+    th:utext="${paymentType} ?: ''"></span></p>
 
 
-<div class="info-table">
-    <div class="info-table-row">
-        <div class="info-table-cell seller-info">
-            <h2>Sprzedawca:</h2>
-            <p>
-                <span th:utext="${payment?.user.tutorDetails.getCompanyName()} ?: ''"></span><br/>
-                <span th:utext="${payment?.sellerNameAndSurname} ?: ''"></span><br/>
-                <span th:utext="${payment?.user.tutorDetails.getStreet()} ?: ''"></span><br/>
-                <span th:utext="${payment?.user.tutorDetails.getPostCode()} ?: ''"></span>
-                <span th:utext="${payment?.user.tutorDetails.getPlace()} ?: ''"></span><br/>
-                NIP: <span th:utext="${payment?.sellerNip} ?: ''"></span>
-            </p>
-        </div>
-        <div class="info-table-cell buyer-info">
-            <h2>Nabywca:</h2>
-            <p>
-                <span th:utext="${payment?.buyerName} ?: ''"></span><br/>
-                <span th:utext="${payment.street} ?: ''"></span><br/>
-                <span th:utext="${payment.zip} ?: ''"></span>
-                <span th:utext="${payment?.city} ?: ''"></span><br/>
-                <span th:if="${payment?.nip != null and payment?.nip != ''}">
-                NIP: <span th:utext="${payment?.nip}"></span></span>
-            </p>
-        </div>
-    </div>
-</div>
+<!--<div class="info-table">-->
+<!--    <div class="info-table-row">-->
+<!--        <div class="info-table-cell seller-info">-->
+<!--            <h2>Sprzedawca:</h2>-->
+<!--            <p>-->
+<!--                <span th:utext="${payment?.user.tutorDetails.getCompanyName()} ?: ''"></span><br/>-->
+<!--                <span th:utext="${payment?.sellerNameAndSurname} ?: ''"></span><br/>-->
+<!--                <span th:utext="${payment?.user.tutorDetails.getStreet()} ?: ''"></span><br/>-->
+<!--                <span th:utext="${payment?.user.tutorDetails.getPostCode()} ?: ''"></span>-->
+<!--                <span th:utext="${payment?.user.tutorDetails.getPlace()} ?: ''"></span><br/>-->
+<!--                NIP: <span th:utext="${payment?.sellerNip} ?: ''"></span>-->
+<!--            </p>-->
+<!--        </div>-->
+<!--        <div class="info-table-cell buyer-info">-->
+<!--            <h2>Nabywca:</h2>-->
+<!--            <p>-->
+<!--                <span th:utext="${payment?.buyerName} ?: ''"></span><br/>-->
+<!--                <span th:utext="${payment.street} ?: ''"></span><br/>-->
+<!--                <span th:utext="${payment.zip} ?: ''"></span>-->
+<!--                <span th:utext="${payment?.city} ?: ''"></span><br/>-->
+<!--                <span th:if="${payment?.nip != null and payment?.nip != ''}">-->
+<!--                NIP: <span th:utext="${payment?.nip}"></span></span>-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
 
 
-<p class="new-paragraph">Numer konta:</p>
-<p><span th:utext="${payment?.sellerBankAccountNumber} ?: ''"></span><br/>
-    <span th:utext="${payment?.sellerBankName} ?: ''"></span></p>
+<!--<p class="new-paragraph">Numer konta:</p>-->
+<!--<p><span th:utext="${payment?.sellerBankAccountNumber} ?: ''"></span><br/>-->
+<!--    <span th:utext="${payment?.sellerBankName} ?: ''"></span></p>-->
 
 
-<table class="invoice-table">
-    <tr>
-        <th>LP</th>
-        <th class="nazwa">Nazwa</th>
-        <th>Ilość</th>
-        <th>Jednostka</th>
-        <th>Cena netto</th>
-        <th>VAT</th>
-        <th>Wartość netto</th>
-        <th>Kwota VAT</th>
-        <th>Wartość brutto</th>
-    </tr>
-    <tr th:each="invoice, index : ${payment?.invoices}">
-        <td th:text="${index.index + 1}"></td>
-        <td class="nazwa" th:utext="${invoice?.name} ?: ''"></td>
-        <td th:utext="${invoice?.amount} ?: ''"></td>
-        <td th:utext="${invoice?.unit == 'pieces' ? 'szt.' : (invoice?.unit == 'hours' ? 'godz.' : '')}"></td>
-        <td class="check-value" th:utext="${priceNettoValues[index.index]} ?: ''"></td>
-        <td th:utext="${invoice?.vat == 'vatExempt'? 'zw.' : invoice?.vat + '%'}"></td>
-        <td class="check-value" th:utext="${priceNettoValues[index.index]} ?: ''"></td>
-        <td class="check-value" th:utext="${vatValues[index.index]} ?: ''"></td>
-        <td class="check-value" th:utext="${priceBruttoValues[index.index]} ?: ''"></td>
-        <td class="check-value" colspan="2"></td>
-    </tr>
-    <tr>
-        <td colspan="1"><strong>Razem:</strong></td>
-        <td colspan="5"></td>
-        <td th:utext="${summaryNetPrice} ?: ''"></td>
-        <td th:utext="${summaryVat} ?: ''"></td>
-        <td th:utext="${summaryBruttoPrice} ?: ''"></td>
-        <td colspan="2"></td>
-    </tr>
-</table>
-<div class="value-summary" style="margin-top: 20px;">
-    <div class="value-line">
-        <span class="value-label">Wartość netto:</span>
-        <span class="value" th:utext="${summaryNetPrice}?: ''"></span>
-        <span class="currency">zł</span>
-    </div>
-    <div class="value-line">
-        <span class="value-label">Wartość VAT:</span>
-        <span class="value" th:utext="${summaryVat}?: ''"></span>
-        <span class="currency">zł</span>
-    </div>
-    <div class="value-line">
-        <span class="value-label">Wartość brutto:</span>
-        <span class="value" th:utext="${summaryBruttoPrice}?: ''"></span>
-        <span class="currency">zł</span>
-    </div>
-</div>
+<!--<table class="invoice-table">-->
+<!--    <tr>-->
+<!--        <th>LP</th>-->
+<!--        <th class="nazwa">Nazwa</th>-->
+<!--        <th>Ilość</th>-->
+<!--        <th>Jednostka</th>-->
+<!--        <th>Cena netto</th>-->
+<!--        <th>VAT</th>-->
+<!--        <th>Wartość netto</th>-->
+<!--        <th>Kwota VAT</th>-->
+<!--        <th>Wartość brutto</th>-->
+<!--    </tr>-->
+<!--    <tr th:each="invoice, index : ${payment?.invoices}">-->
+<!--        <td th:text="${index.index + 1}"></td>-->
+<!--        <td class="nazwa" th:utext="${invoice?.name} ?: ''"></td>-->
+<!--        <td th:utext="${invoice?.amount} ?: ''"></td>-->
+<!--        <td th:utext="${invoice?.unit == 'pieces' ? 'szt.' : (invoice?.unit == 'hours' ? 'godz.' : '')}"></td>-->
+<!--        <td class="check-value" th:utext="${priceNettoValues[index.index]} ?: ''"></td>-->
+<!--        <td th:utext="${invoice?.vat == 'vatExempt'? 'zw.' : invoice?.vat + '%'}"></td>-->
+<!--        <td class="check-value" th:utext="${priceNettoValues[index.index]} ?: ''"></td>-->
+<!--        <td class="check-value" th:utext="${vatValues[index.index]} ?: ''"></td>-->
+<!--        <td class="check-value" th:utext="${priceBruttoValues[index.index]} ?: ''"></td>-->
+<!--        <td class="check-value" colspan="2"></td>-->
+<!--    </tr>-->
+<!--    <tr>-->
+<!--        <td colspan="1"><strong>Razem:</strong></td>-->
+<!--        <td colspan="5"></td>-->
+<!--        <td th:utext="${summaryNetPrice} ?: ''"></td>-->
+<!--        <td th:utext="${summaryVat} ?: ''"></td>-->
+<!--        <td th:utext="${summaryBruttoPrice} ?: ''"></td>-->
+<!--        <td colspan="2"></td>-->
+<!--    </tr>-->
+<!--</table>-->
+<!--<div class="value-summary" style="margin-top: 20px;">-->
+<!--    <div class="value-line">-->
+<!--        <span class="value-label">Wartość netto:</span>-->
+<!--        <span class="value" th:utext="${summaryNetPrice}?: ''"></span>-->
+<!--        <span class="currency">zł</span>-->
+<!--    </div>-->
+<!--    <div class="value-line">-->
+<!--        <span class="value-label">Wartość VAT:</span>-->
+<!--        <span class="value" th:utext="${summaryVat}?: ''"></span>-->
+<!--        <span class="currency">zł</span>-->
+<!--    </div>-->
+<!--    <div class="value-line">-->
+<!--        <span class="value-label">Wartość brutto:</span>-->
+<!--        <span class="value" th:utext="${summaryBruttoPrice}?: ''"></span>-->
+<!--        <span class="currency">zł</span>-->
+<!--    </div>-->
+<!--</div>-->
 
-<br/>
+<!--<br/>-->
 
-<p th:if="${not #strings.isEmpty(payment?.vatExemptionReason)}" class="new-paragraph">
-    <span class="value-label">Podstawa zwolnienia z podatku VAT:</span><br/>
-    <span th:utext="${payment?.vatExemptionReason == 'vatExemptionLowRegulation' ? 'Zwolnienie na mocy rozporządzenia MF (art. 82 ust 3 ustawy o VAT)' :
-                    (payment?.vatExemptionReason == 'vatExemptionLowRevenue' ? 'Zwolnienie ze względu na nieprzekroczenie 200 000 pln obrotu (art. 113 ust 1 i 9 ustawy o VAT)' :
-                    (payment?.vatExemptionReason == 'vatExemptionWorkField' ? 'Zwolnienie ze względu na rodzaj prowadzonej działalności (art. 43 ust 1 ustawy o VAT)' : ''))}">
-    </span>
-</p>
+<!--<p th:if="${not #strings.isEmpty(payment?.vatExemptionReason)}" class="new-paragraph">-->
+<!--    <span class="value-label">Podstawa zwolnienia z podatku VAT:</span><br/>-->
+<!--    <span th:utext="${payment?.vatExemptionReason == 'vatExemptionLowRegulation' ? 'Zwolnienie na mocy rozporządzenia MF (art. 82 ust 3 ustawy o VAT)' :-->
+<!--                    (payment?.vatExemptionReason == 'vatExemptionLowRevenue' ? 'Zwolnienie ze względu na nieprzekroczenie 200 000 pln obrotu (art. 113 ust 1 i 9 ustawy o VAT)' :-->
+<!--                    (payment?.vatExemptionReason == 'vatExemptionWorkField' ? 'Zwolnienie ze względu na rodzaj prowadzonej działalności (art. 43 ust 1 ustawy o VAT)' : ''))}">-->
+<!--    </span>-->
+<!--</p>-->
 
-<br/><br/><br/>
+<!--<br/><br/><br/>-->
 
-<p class="new-paragraph">Kwota opłacona: <span th:utext="${amountPaid} ?: ''"></span> zł</p>
-<p class="new-paragraph">Do zapłaty: <span th:utext="${toPay} ?: ''"></span> zł</p>
+<!--<p class="new-paragraph">Kwota opłacona: <span th:utext="${amountPaid} ?: ''"></span> zł</p>-->
+<!--<p class="new-paragraph">Do zapłaty: <span th:utext="${toPay} ?: ''"></span> zł</p>-->
 </body>
 </html>

@@ -9,7 +9,7 @@ import codepred.common.mapper.PaymentMapper;
 import codepred.common.util.ResponseObject;
 import codepred.exception.CustomException;
 import codepred.invoice.Invoice;
-import codepred.invoice.InvoiceRepository;
+import codepred.invoice.DocumentRepository;
 import codepred.invoice.dto.InvoiceDto;
 import codepred.invoice.dto.InvoicesDto;
 import codepred.payment.dto.PaymentReadDto;
@@ -55,7 +55,7 @@ public class PaymentService {
     ClientService clientService;
 
     @Autowired
-    InvoiceRepository invoiceRepository;
+    DocumentRepository documentRepository;
 
     @Autowired
     private TemplateEngine templateEngine;
@@ -152,7 +152,7 @@ public class PaymentService {
         setVatValues(invoiceDto, invoice);
         invoice.setCheckPrice(invoiceDto.getCheckPrice());
         invoice.setCheckValue(invoiceDto.getCheckValue());
-        invoice = invoiceRepository.saveAndFlush(invoice);
+        invoice = documentRepository.saveAndFlush(invoice);
         return invoice;
     }
 
