@@ -1,43 +1,38 @@
 version: '3.7'
 services:
-  tutorio-backend:
-    image: tutorio-backend:latest
+  uks-backend:
+    image: uks-backend:latest
     build:
       context: .
       dockerfile: ./Dockerfile
-    container_name: tutorio-backend
+    container_name: uks-backend
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/codepred?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: admin
-      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_DATASOURCE_URL: jdbc:mysql://uks-mysql:3306/uks?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: jacek
+      SPRING_DATASOURCE_PASSWORD: FGDSK54$$
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQL8Dialect
     depends_on:
-      - postgres
-    volumes:
-      - ./files:/var/tutorio-files
+      - mysql
     networks:
-      - tutorio-net
+      - uks-net
     restart: unless-stopped
 
-  postgres:
-    image: postgres:13
-    container_name: postgres-db
-    ports:
-      - "3309:5432"
+  mysql:
+    image: mysql:8.0
+    container_name: uks-mysql
     volumes:
-      - tutorio-postgres-data:/var/lib/postgresql/data
+      - uks-mysql-data:/var/lib/mysql
     networks:
-      - tutorio-net
+      - uks-net
     healthcheck:
-      test: pg_isready -U postgres
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
       interval: 1m
       timeout: 10s
       retries: 2
 
 volumes:
-  tutorio-postgres-data:
+  uks-mysql-data:
 
 networks:
-  tutorio-net:
-    name: tutorio-net
-
+  uks-net:
+    name: uks-net
