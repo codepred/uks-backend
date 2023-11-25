@@ -107,4 +107,9 @@ public class DocumentService {
         return monthValue;
     }
 
+    public byte[] download(String fileName) throws IOException {
+        byte[] fileContent = Files.readAllBytes(Path.of(invoicePath + fileName));
+        return fileContent;
+    }
+
 }
