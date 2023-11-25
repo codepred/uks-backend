@@ -87,7 +87,7 @@ public class InvoiceController {
             return ResponseEntity.status(400).build();
         }
 
-        MultipartFile signature = new ByteArrayMultipartFile(signaturePhoto, "signature", "signature.png", "image/png");
+        MultipartFile signature = ByteToMultipartFileConverter.convertToMultipartFile(signaturePhoto,"signature");
 
         saveSignature(signature);
 
