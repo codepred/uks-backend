@@ -13,10 +13,12 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import javax.mail.Multipart;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextFontResolver;
@@ -41,7 +43,7 @@ public class DocumentService {
         return invoiceRepository.save(invoice);
     }
 
-    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice) throws IOException, DocumentException {
+    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice, MultipartFile multipartFile) throws IOException, DocumentException {
         Context context = new Context();
         String processedHtml;
 
@@ -59,8 +61,8 @@ public class DocumentService {
                                 + " " + invoiceData.getCity());
         context.setVariable("sellerEmail", "Email: " + invoiceData.getEmail());
         context.setVariable("invoiceData", invoiceData);
-        context.setVariable("public_domain",
-                            "https://icons.iconarchive.com/icons/tribalmarkings/colorflow/128/signature-icon.png");
+        context.setVariable("signature_file",
+                            "https://api.gotem.pl/download/" + multipartFile.getOriginalFilename());
         context.setVariable("invoiceNumber", "Sale agreement nr " + invoice.getId() + "-" + getCurrentMonth());
         processedHtml = templateEngine.process("invoice_template", context);
 
