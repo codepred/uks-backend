@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -45,13 +47,20 @@ public class InvoiceController {
             return ResponseEntity.status(400).build();
         }
         InvoiceEntity invoice = pdfService.saveInvoice(invoicedata);
+        List<byte[]> invoicesPdf = new ArrayList<>();
 
-        final var pdfDocument = pdfService.generateInvoice(invoicedata, invoice);
+
+        for(Product product : invoicedata.getProductList()){
+            InvoiceData tempInvoiceData = new InvoiceData();
+            tempInvoiceData = invoicedata;
+            tempInvoiceData.setProductList(List.of(product));
+            invoicesPdf.add(pdfService.generateInvoice(tempInvoiceData, invoice));
+        }
         mailService.sendEmailWithAttachment(invoicedata.getEmail(),
                                             "Umowa kupna-sprzedaży",
                                             "Dziękuję za transakcję. W załączniku przesyłam umowę kupna-sprzedaży. \n \n "
                                                 + "Thank you for the transaction. Sale agreement document attached to message.",
-                                            pdfDocument,
+                                            invoicesPdf,
                                             invoicedata.getName(),
                                             invoice.getId().toString());
         return null;

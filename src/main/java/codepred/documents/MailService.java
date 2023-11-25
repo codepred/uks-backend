@@ -1,11 +1,13 @@
 package codepred.documents;
 
+import java.util.List;
 import java.util.Properties;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.Authenticator;
 import javax.mail.BodyPart;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -40,7 +42,7 @@ public class MailService {
         this.mailSender = mailSender;
     }
 
-    public void sendEmailWithAttachment(String to, String subject, String body, byte[] pdfDocument, String name, String id) {
+    public void sendEmailWithAttachment(String to, String subject, String body, List<byte[]> pdfDocuments, String name, String id) {
 
         try {
             Properties props = new Properties();
@@ -60,25 +62,35 @@ public class MailService {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(subject);
 
-            BodyPart messageBodyPart = new MimeBodyPart();
-            messageBodyPart.setText(body);
-
-            MimeBodyPart attachmentPart = new MimeBodyPart();
-            DataSource source = new ByteArrayDataSource(pdfDocument, "application/pdf");
-            attachmentPart.setDataHandler(new DataHandler(source));
-            attachmentPart.setFileName(name + ".pdf");
-
+            // Create a multipart message
             Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(messageBodyPart);
-            multipart.addBodyPart(attachmentPart);
 
+            // Add text content to the email
+            BodyPart messageBodyPart = new MimeBodyPart();
+            messageBodyPart.setText("Dziękuję za transakcję. W załączniku przesyłam umowę kupna-sprzedaży. \n"
+                                        + "Thank you for the transaction. Sale agreement document attached to message.");
+            multipart.addBodyPart(messageBodyPart);
+
+            // Attach multiple PDF files from byte arrays
+            for (int i = 0; i < pdfDocuments.size(); i++) {
+                byte[] pdfData = pdfDocuments.get(i);
+                DataSource source = new ByteArrayDataSource(pdfData, "application/pdf");
+
+                messageBodyPart = new MimeBodyPart();
+                messageBodyPart.setDataHandler(new DataHandler(source));
+                messageBodyPart.setFileName(name + "_" + (i + 1) + ".pdf"); // You can customize the file name here
+                multipart.addBodyPart(messageBodyPart);
+            }
+
+            // Set the complete message parts
             message.setContent(multipart);
 
+            // Send the email
             Transport.send(message);
 
-            System.out.println("Email sent successfully with PDF attachment!");
+            System.out.println("Email sent successfully with multiple PDF attachments!");
 
-        } catch (Exception e) {
+        } catch (MessagingException e) {
             e.printStackTrace();
         }
     }
