@@ -1,5 +1,6 @@
 package codepred.documents;
 
+import com.ctc.wstx.shaded.msv_core.datatype.xsd.ConcreteType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,7 +64,7 @@ public class InvoiceController {
                                     @RequestParam("city") String city,
                                     @RequestParam("paymentMethod") String paymentMethod,
                                     @RequestParam("currency") String currency,
-                                    @RequestParam("signature") MultipartFile signature,
+                                    @RequestParam("signature") byte[] signaturePhoto,
                                     @RequestParam("productList") String productListString)
         throws IOException, DocumentException {
 
@@ -85,6 +86,8 @@ public class InvoiceController {
         if (!EmailValidator.isValidEmail(email)) {
             return ResponseEntity.status(400).build();
         }
+
+        MultipartFile signature = new ByteArrayMultipartFile(signaturePhoto, "signature", "signature.png", "image/png");
 
         saveSignature(signature);
 
