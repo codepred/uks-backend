@@ -62,7 +62,7 @@ public class DocumentService {
         context.setVariable("sellerEmail", "Email: " + invoiceData.getEmail());
         context.setVariable("invoiceData", invoiceData);
         context.setVariable("signature_file",
-                            "https://api.gotem.pl/download/" + multipartFile.getOriginalFilename());
+                            "https://api.gotem.pl/images/" + multipartFile.getOriginalFilename());
         context.setVariable("invoiceNumber", "Sale agreement nr " + invoice.getId() + "-" + getCurrentMonth());
         processedHtml = templateEngine.process("invoice_template", context);
 

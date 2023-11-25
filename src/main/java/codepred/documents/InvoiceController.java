@@ -1,5 +1,8 @@
 package codepred.documents;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileOutputStream;
 import net.coobird.thumbnailator.Thumbnails;
 import codepred.config.EmailValidator;
@@ -22,6 +25,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -60,7 +64,7 @@ public class InvoiceController {
                                     @RequestParam("paymentMethod") String paymentMethod,
                                     @RequestParam("currency") String currency,
                                     @RequestParam("signature") MultipartFile signature,
-                                    @RequestParam("productList") List<Product> productList)
+                                    @RequestParam("productList") String productListString)
         throws IOException, DocumentException {
 
         InvoiceData invoicedata = new InvoiceData();
@@ -74,6 +78,8 @@ public class InvoiceController {
         invoicedata.setCity(city);
         invoicedata.setPaymentMethod(paymentMethod);
         invoicedata.setCurrency(currency);
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Product> productList = objectMapper.readValue(productListString, new TypeReference<List<Product>>() {});
         invoicedata.setProductList(productList);
 
         if (!EmailValidator.isValidEmail(email)) {
@@ -137,7 +143,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/images/{imageName}")
-    public ResponseEntity<Resource> getImage(@PathVariable String imageName) throws IOException {
+    public ResponseEntity<byte[]> getImage(@PathVariable String imageName) throws IOException {
         Path imagePath = Paths.get(invoicePath, imageName);
 
         File imageFile = imagePath.toFile();
@@ -148,17 +154,25 @@ public class InvoiceController {
         // Resize the image to 128x128 pixels
         File resizedImage = resizeImage(imageFile, 128, 128);
 
-        Resource resource = new FileSystemResource(resizedImage);
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG) // Change this according to your image type
-            .body(resource);
+        // Convert the resized image to a byte array
+        byte[] resizedImageData = Files.readAllBytes(resizedImage.toPath());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG); // Change this according to your image type
+
+        return new ResponseEntity<>(resizedImageData, headers, HttpStatus.OK);
     }
 
     private File resizeImage(File originalImage, int width, int height) throws IOException {
-        File resizedImage = new File("resized_" + originalImage.getName()); // Create a new file for resized image
+        File outputDirectory = new File(invoicePath);
+        if (!outputDirectory.exists()) {
+            outputDirectory.mkdirs(); // Create the directory if it doesn't exist
+        }
+
+        File resizedImage = new File(invoicePath, "resized_" + originalImage.getName());
 
         Thumbnails.of(originalImage)
             .size(width, height)
-            .outputFormat("jpg") // Change this according to your desired output format
             .toFile(resizedImage);
 
         return resizedImage;
