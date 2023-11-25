@@ -13,6 +13,8 @@ services:
       SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQL8Dialect
     depends_on:
       - mysql
+    volumes:
+      - ./files:/var/uks-files
     networks:
       - uks-net
     restart: unless-stopped
