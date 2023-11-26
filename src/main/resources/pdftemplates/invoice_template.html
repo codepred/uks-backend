@@ -170,7 +170,7 @@
   </tr>
   <tr th:each="product, index : ${invoiceData?.productList}">
     <td class="nazwa" th:utext="${product?.name} ?: ''"></td>
-    <td th:utext="${product?.amount} ?: ''"></td>
+    <td th:utext="1"></td>
     <td th:utext="${product?.price} ?: ''"></td>
   </tr>
 </table>
