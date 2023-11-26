@@ -49,7 +49,7 @@ public class DocumentService {
         return invoiceRepository.save(invoice);
     }
 
-    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice, MultipartFile multipartFile) throws IOException, DocumentException {
+    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice, String signature_blob) throws IOException, DocumentException {
         Context context = new Context();
         String processedHtml;
 
@@ -67,8 +67,7 @@ public class DocumentService {
                                 + " " + invoiceData.getCity());
         context.setVariable("sellerEmail", "Email: " + invoiceData.getEmail());
         context.setVariable("invoiceData", invoiceData);
-        context.setVariable("signature_file",
-                            "https://api.gotem.pl/images/" + multipartFile.getOriginalFilename());
+        context.setVariable("signature_file", signature_blob);
         context.setVariable("invoiceNumber", "Sale agreement nr " + invoice.getId() + "-" + getCurrentMonth());
         processedHtml = templateEngine.process("invoice_template", context);
 

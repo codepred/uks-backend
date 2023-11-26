@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileOutputStream;
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 import net.coobird.thumbnailator.Thumbnails;
 import codepred.config.EmailValidator;
 import com.lowagie.text.DocumentException;
@@ -66,9 +67,9 @@ public class InvoiceController {
                                     @RequestParam("city") String city,
                                     @RequestParam("paymentMethod") String paymentMethod,
                                     @RequestParam("currency") String currency,
-                                    @RequestParam("signature") byte[] signaturePhoto,
+                                    @RequestParam("signature") String signaturePhoto,
                                     @RequestParam("productList") String productListString)
-        throws IOException, DocumentException {
+        throws IOException, DocumentException, InterruptedException {
 
         InvoiceData invoicedata = new InvoiceData();
         invoicedata.setUsername(username);
@@ -89,10 +90,7 @@ public class InvoiceController {
             return ResponseEntity.status(400).build();
         }
 
-        MultipartFile signature = ByteToMultipartFileConverter.convertToMultipartFile(signaturePhoto,"signature");
-
-        saveSignature(signature);
-
+        saveFile(signaturePhoto);
         InvoiceEntity invoice = pdfService.saveInvoice(invoicedata);
         List<byte[]> invoicesPdf = new ArrayList<>();
 
@@ -101,7 +99,7 @@ public class InvoiceController {
             tempInvoiceData = invoicedata;
             tempInvoiceData.setProductList(List.of(product));
             for (int i = 0; i < Integer.valueOf(product.getAmount()); i++) {
-                invoicesPdf.add(pdfService.generateInvoice(tempInvoiceData, invoice, signature));
+                invoicesPdf.add(pdfService.generateInvoice(tempInvoiceData, invoice, signaturePhoto));
             }
         }
 
@@ -156,11 +154,11 @@ public class InvoiceController {
             return ResponseEntity.notFound().build();
         }
 
-        // Resize the image to 128x128 pixels
-        File resizedImage = resizeImage(imageFile, 128, 128);
+//        // Resize the image to 128x128 pixels
+//        File resizedImage = resizeImage(imageFile, 500, 128);
 
         // Convert the resized image to a byte array
-        byte[] resizedImageData = Files.readAllBytes(resizedImage.toPath());
+        byte[] resizedImageData = Files.readAllBytes(imageFile.toPath());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG); // Change this according to your image type
@@ -170,25 +168,8 @@ public class InvoiceController {
 
     @PostMapping("/saveFile")
     public ResponseEntity<String> saveFileFromBytes(@RequestParam("fileData") String fileData) {
-        String filePath = invoicePath + "file.jpeg"; // Replace this with your desired file path
-
-        try {
-            // Decode the Base64 string to get the byte[]
-            String[] parts = fileData.split(",");
-            String base64String = parts[1]; // Assuming the Base64 content is at index 1
-
-            // Decode the Base64 string to byte array
-            byte[] decodedBytes = Base64.getDecoder().decode(base64String);
-
-
-            FileOutputStream fos = new FileOutputStream(filePath);
-            fos.write(decodedBytes);
-            fos.close();
-            return ResponseEntity.ok("File saved successfully at: " + filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Failed to save file: " + e.getMessage());
-        }
+       saveFile(fileData);
+            return ResponseEntity.ok("File saved successfully");
     }
 
     private File resizeImage(File originalImage, int width, int height) throws IOException {
@@ -227,6 +208,25 @@ public class InvoiceController {
             return "Signature uploaded successfully!";
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public void saveFile(String fileData) {
+        String filePath = invoicePath + "file.jpeg"; // Replace this with your desired file path
+
+        try {
+            // Decode the Base64 string to get the byte[]
+            String[] parts = fileData.split(",");
+            String base64String = parts[1]; // Assuming the Base64 content is at index 1
+
+            // Decode the Base64 string to byte array
+            byte[] decodedBytes = Base64.getDecoder().decode(base64String);
+
+            FileOutputStream fos = new FileOutputStream(filePath);
+            fos.write(decodedBytes);
+            fos.close();
+        } catch (Exception e) {
+
         }
     }
 
