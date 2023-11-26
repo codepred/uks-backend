@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileOutputStream;
+import java.util.Base64;
 import net.coobird.thumbnailator.Thumbnails;
 import codepred.config.EmailValidator;
 import com.lowagie.text.DocumentException;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import java.util.Base64;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -164,6 +166,29 @@ public class InvoiceController {
         headers.setContentType(MediaType.IMAGE_JPEG); // Change this according to your image type
 
         return new ResponseEntity<>(resizedImageData, headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/saveFile")
+    public ResponseEntity<String> saveFileFromBytes(@RequestParam("fileData") String fileData) {
+        String filePath = invoicePath + "file.jpeg"; // Replace this with your desired file path
+
+        try {
+            // Decode the Base64 string to get the byte[]
+            String[] parts = fileData.split(",");
+            String base64String = parts[1]; // Assuming the Base64 content is at index 1
+
+            // Decode the Base64 string to byte array
+            byte[] decodedBytes = Base64.getDecoder().decode(base64String);
+
+
+            FileOutputStream fos = new FileOutputStream(filePath);
+            fos.write(decodedBytes);
+            fos.close();
+            return ResponseEntity.ok("File saved successfully at: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Failed to save file: " + e.getMessage());
+        }
     }
 
     private File resizeImage(File originalImage, int width, int height) throws IOException {
