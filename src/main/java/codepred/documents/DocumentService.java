@@ -49,7 +49,7 @@ public class DocumentService {
         return invoiceRepository.save(invoice);
     }
 
-    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice, String signature_blob) throws IOException, DocumentException {
+    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice, String signature_blob, String username, int number) throws IOException, DocumentException {
         Context context = new Context();
         String processedHtml;
 
@@ -75,7 +75,7 @@ public class DocumentService {
         final ITextRenderer renderer = getiTextRenderer(processedHtml);
         renderer.createPDF(out);
 
-        String filePath = invoicePath + invoice.getId() + "-" + getCurrentMonth() + ".pdf";
+        String filePath = invoicePath + username + number + ".pdf";
 
         Path directoryPath = Paths.get(invoicePath);
         try {

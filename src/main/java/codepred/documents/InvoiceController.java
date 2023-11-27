@@ -1,12 +1,9 @@
 package codepred.documents;
 
-import com.ctc.wstx.shaded.msv_core.datatype.xsd.ConcreteType;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileOutputStream;
 import java.util.Base64;
-import java.util.concurrent.TimeUnit;
 import net.coobird.thumbnailator.Thumbnails;
 import codepred.config.EmailValidator;
 import com.lowagie.text.DocumentException;
@@ -24,21 +21,16 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import java.util.Base64;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,10 +42,12 @@ public class InvoiceController {
     private String invoicePath;
     private final MailService mailService;
     private final DocumentService pdfService;
+    private final NumberRepository numberRepository;
 
-    public InvoiceController(final MailService mailService, final DocumentService pdfService) {
+    public InvoiceController(final MailService mailService, final DocumentService pdfService, final NumberRepository numberRepository) {
         this.mailService = mailService;
         this.pdfService = pdfService;
+        this.numberRepository = numberRepository;
     }
 
     @PostMapping(value = "/invoice/create-pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -93,15 +87,30 @@ public class InvoiceController {
         saveFile(signaturePhoto);
         InvoiceEntity invoice = pdfService.saveInvoice(invoicedata);
         List<byte[]> invoicesPdf = new ArrayList<>();
+        int number = 0;
+        if(numberRepository.findAll().size() == 0){
+            Number number1 = new Number();
+            number1.setNumber(1);
+            numberRepository.save(number1);
+            number = 1;
+        }
+        else {
+            number = numberRepository.findAll().get(0).getNumber();
+        }
 
         for (Product product : productList) {
             InvoiceData tempInvoiceData = new InvoiceData();
             tempInvoiceData = invoicedata;
             tempInvoiceData.setProductList(List.of(product));
             for (int i = 0; i < Integer.valueOf(product.getAmount()); i++) {
-                invoicesPdf.add(pdfService.generateInvoice(tempInvoiceData, invoice, signaturePhoto));
+                invoicesPdf.add(pdfService.generateInvoice(tempInvoiceData, invoice, signaturePhoto, username, number));
+                number ++;
             }
         }
+
+        Number updatedNumber = numberRepository.findAll().get(0);
+        updatedNumber.setNumber(number);
+        numberRepository.save(updatedNumber);
 
         mailService.sendEmailWithAttachment(email,
                                             "Umowa kupna-sprzedaży",
