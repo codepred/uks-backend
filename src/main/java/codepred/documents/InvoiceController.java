@@ -81,7 +81,7 @@ public class InvoiceController {
         invoicedata.setProductList(productList);
 
         if (!EmailValidator.isValidEmail(email)) {
-            return ResponseEntity.status(400).build();
+            return ResponseEntity.status(400).body("INVALID EMAIL");
         }
 
         saveFile(signaturePhoto);
@@ -95,7 +95,15 @@ public class InvoiceController {
             number = 1;
         }
         else {
-            number = numberRepository.findAll().get(0).getNumber();
+            Number numberFromDb = numberRepository.findAll().get(0);
+            if(numberFromDb.getNumber() == null){
+                numberFromDb.setNumber(1);
+                numberRepository.save(numberFromDb);
+                number = 1;
+            }
+            else {
+                number = numberRepository.findAll().get(0).getNumber();
+            }
         }
 
         for (Product product : productList) {
