@@ -68,7 +68,7 @@ public class DocumentService {
         context.setVariable("sellerEmail", "Email: " + invoiceData.getEmail());
         context.setVariable("invoiceData", invoiceData);
         context.setVariable("signature_file", signature_blob);
-        context.setVariable("invoiceNumber", "Sale agreement nr " + invoice.getId() + "-" + getCurrentMonth());
+        context.setVariable("invoiceNumber", "Sale agreement nr " + number + "-" + getCurrentMonth());
         processedHtml = templateEngine.process("invoice_template", context);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
