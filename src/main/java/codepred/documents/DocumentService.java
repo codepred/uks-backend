@@ -59,9 +59,9 @@ public class DocumentService {
         context.setVariable("buyerName", "GOT’EM STORE Mikołaj Maszner");
         context.setVariable("buyerAddress", "Żurawia 46");
         context.setVariable("buyerAddress1", "62-002 Złotniki");
-        context.setVariable("buyerNip", "NIP: 9721301624'");
+        context.setVariable("buyerNip", "NIP: 9721301624");
 
-        context.setVariable("sellerName", "Imię i nazwisko: " + invoiceData.getUsername());
+        context.setVariable("sellerName", "Imię i nazwisko: " + invoiceData.getName());
         context.setVariable("sellerAddress",
                             "Adres: " + invoiceData.getStreet() + " " + invoiceData.getAptNumber() + ", " + invoiceData.getZip()
                                 + " " + invoiceData.getCity());
@@ -75,7 +75,7 @@ public class DocumentService {
         final ITextRenderer renderer = getiTextRenderer(processedHtml);
         renderer.createPDF(out);
 
-        String filePath = invoicePath + username + number + ".pdf";
+        String filePath = invoicePath + invoiceData.getName() + number + ".pdf";
 
         Path directoryPath = Paths.get(invoicePath);
         try {
