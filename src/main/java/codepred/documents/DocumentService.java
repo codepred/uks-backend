@@ -49,7 +49,7 @@ public class DocumentService {
         return invoiceRepository.save(invoice);
     }
 
-    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice, String signature_blob, String username, int number) throws IOException, DocumentException {
+    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice, String signature_blob, String username, int number, int fileNumber) throws IOException, DocumentException {
         Context context = new Context();
         String processedHtml;
 
@@ -60,6 +60,8 @@ public class DocumentService {
         context.setVariable("buyerAddress", "Żurawia 46");
         context.setVariable("buyerAddress1", "62-002 Złotniki");
         context.setVariable("buyerNip", "NIP: 9721301624");
+        context.setVariable("finalPrice", invoiceData.getProductList().get(0).getPrice());
+        context.setVariable("currency", invoiceData.getCurrency());
 
         context.setVariable("sellerName", "Imię i nazwisko: " + invoiceData.getName());
         context.setVariable("sellerAddress",
@@ -75,7 +77,7 @@ public class DocumentService {
         final ITextRenderer renderer = getiTextRenderer(processedHtml);
         renderer.createPDF(out);
 
-        String filePath = invoicePath + invoiceData.getName() + number + ".pdf";
+        String filePath = invoicePath + invoiceData.getName() + fileNumber + ".pdf";
 
         Path directoryPath = Paths.get(invoicePath);
         try {

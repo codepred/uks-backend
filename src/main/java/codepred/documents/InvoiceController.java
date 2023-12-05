@@ -111,7 +111,7 @@ public class InvoiceController {
             tempInvoiceData = invoicedata;
             tempInvoiceData.setProductList(List.of(product));
             for (int i = 0; i < Integer.valueOf(product.getAmount()); i++) {
-                invoicesPdf.add(pdfService.generateInvoice(tempInvoiceData, invoice, signaturePhoto, username, number));
+                invoicesPdf.add(pdfService.generateInvoice(tempInvoiceData, invoice, signaturePhoto, username, number, i));
                 number ++;
             }
         }

@@ -171,7 +171,7 @@
   <tr th:each="product, index : ${invoiceData?.productList}">
     <td class="nazwa" th:utext="${product?.name} ?: ''"></td>
     <td th:utext="1"></td>
-    <td th:utext="${product?.price} ?: ''"></td>
+    <td th:utext="${product?.price} ?: ''"> <span th:utext="${currency} ?: ''"></span></td>
   </tr>
 </table>
 <p style="font-size: 12px">Sprzedawca oświadcza, że sprzedawane przedmioty stanowią jego własność i
@@ -183,7 +183,7 @@
 </div>
 
 <p style="font-size: 12px">1. Kupujący zapłaci Sprzedawcy za ww. przedmioty cenę brutto w wysokość:
-  1000PLN</p>
+  <span th:utext="${finalPrice} ?: ''"></span></p>
 <p style="font-size: 12px">2. Sprzedający wybrał zapłatę przez Kupującego następującą formą
   płatności: </p>
 
