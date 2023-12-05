@@ -60,7 +60,7 @@ public class DocumentService {
         context.setVariable("buyerAddress", "Żurawia 46");
         context.setVariable("buyerAddress1", "62-002 Złotniki");
         context.setVariable("buyerNip", "NIP: 9721301624");
-        context.setVariable("finalPrice", invoiceData.getProductList().get(0).getPrice());
+        context.setVariable("finalPrice", invoiceData.getProductList().get(0).getPrice() + " " + invoiceData.getCurrency());
         context.setVariable("currency", invoiceData.getCurrency());
 
         context.setVariable("sellerName", "Imię i nazwisko: " + invoiceData.getName());

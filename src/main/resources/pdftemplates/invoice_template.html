@@ -171,7 +171,7 @@
   <tr th:each="product, index : ${invoiceData?.productList}">
     <td class="nazwa" th:utext="${product?.name} ?: ''"></td>
     <td th:utext="1"></td>
-    <td th:utext="${product?.price} ?: ''"> <span th:utext="${currency} ?: ''"></span></td>
+    <td th:utext="${finalPrice} ?: ''"></td>
   </tr>
 </table>
 <p style="font-size: 12px">Sprzedawca oświadcza, że sprzedawane przedmioty stanowią jego własność i
