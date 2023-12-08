@@ -53,9 +53,23 @@ public class DocumentService {
         Context context = new Context();
         String processedHtml;
 
+        String paymentType = null;
+        if(invoiceData.getPaymentMethod().equals("transfer")){
+            paymentType = "przelew/transfer";
+        }
+        if(invoiceData.getPaymentMethod().equals("BLIK")){
+            paymentType = "BLIK";
+        }
+        if(invoiceData.getPaymentMethod().equals("Paypal")){
+            paymentType = "Paypal";
+        }
+        if(invoiceData.getPaymentMethod().equals("Cash")){
+            paymentType = "Gotowka/Cash";
+        }
+
         context.setVariable("place", invoiceData.getStreet() + " " + invoiceData.getCity());
         context.setVariable("date", invoiceData.getDate());
-        context.setVariable("paymentType", invoiceData.getPaymentMethod());
+        context.setVariable("paymentType", paymentType);
         context.setVariable("buyerName", "GOT’EM STORE Mikołaj Maszner");
         context.setVariable("buyerAddress", "Żurawia 46");
         context.setVariable("buyerAddress1", "62-002 Złotniki");
