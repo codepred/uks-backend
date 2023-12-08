@@ -57,13 +57,13 @@ public class DocumentService {
         if(invoiceData.getPaymentMethod().equals("transfer")){
             paymentType = "przelew/transfer";
         }
-        if(invoiceData.getPaymentMethod().equals("BLIK")){
+        if(invoiceData.getPaymentMethod().equals("blik")){
             paymentType = "BLIK";
         }
-        if(invoiceData.getPaymentMethod().equals("Paypal")){
+        if(invoiceData.getPaymentMethod().equals("paypal")){
             paymentType = "Paypal";
         }
-        if(invoiceData.getPaymentMethod().equals("Cash")){
+        if(invoiceData.getPaymentMethod().equals("cash")){
             paymentType = "Gotowka/Cash";
         }
 
