@@ -17,12 +17,14 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class MailService {
 
     @Value("${spring.mail.username}")
@@ -32,15 +34,6 @@ public class MailService {
     private String password;
 
     private final String host = "smtp.gmail.com";
-
-    @Autowired
-    private DocumentService documentService;
-
-    private JavaMailSender mailSender;
-
-    public MailService(final JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
 
     public void sendEmailWithAttachment(String to, String subject, String body, List<byte[]> pdfDocuments, String name, String id) {
 
@@ -82,10 +75,7 @@ public class MailService {
                 multipart.addBodyPart(messageBodyPart);
             }
 
-            // Set the complete message parts
             message.setContent(multipart);
-
-            // Send the email
             Transport.send(message);
 
             System.out.println("Email sent successfully with multiple PDF attachments!");

@@ -1,6 +1,6 @@
 package codepred.documents;
 
-
+import codepred.common.util.NumberService;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
 import java.io.ByteArrayOutputStream;
@@ -11,20 +11,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.List;
 import java.time.LocalDateTime;
 import java.time.Month;
-import javax.mail.Multipart;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextFontResolver;
@@ -39,6 +32,12 @@ public class DocumentService {
     @Autowired
     private InvoiceRepository invoiceRepository;
 
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private NumberService numberService;
+
     @Value("${invoice_path}")
     private String invoicePath;
 
@@ -46,12 +45,18 @@ public class DocumentService {
         InvoiceEntity invoice = new InvoiceEntity();
         invoice.setUsername(invoiceData.getUsername());
         invoice.setCreatedAt(LocalDateTime.now());
+        invoice.setProducts(invoiceData.getProductList());
+        invoice.setEmail(invoiceData.getEmail());
+        invoice.setPaymentMethod(invoiceData.getPaymentMethod());
+        invoice.setCurrency(invoiceData.getCurrency());
+        invoice.setName(invoiceData.getName());
         return invoiceRepository.save(invoice);
     }
 
-    public byte[] generateInvoice(InvoiceData invoiceData, InvoiceEntity invoice, String signature_blob, String username, int number, int fileNumber) throws IOException, DocumentException {
+    public byte[] generateInvoice(InvoiceData invoiceData, Product product, InvoiceEntity invoice, String signature_blob, String username, int fileNumber) throws IOException, DocumentException {
         Context context = new Context();
         String processedHtml;
+        product.setNumber(numberService.generateID());
 
         String paymentType = null;
         if(invoiceData.getPaymentMethod().equals("transfer")){
@@ -66,7 +71,7 @@ public class DocumentService {
         if(invoiceData.getPaymentMethod().equals("cash")){
             paymentType = "Gotowka/Cash";
         }
-
+        invoiceData.setProductList(List.of(product));
         context.setVariable("place", invoiceData.getStreet() + " " + invoiceData.getCity());
         context.setVariable("date", invoiceData.getDate());
         context.setVariable("paymentType", paymentType);
@@ -76,15 +81,15 @@ public class DocumentService {
         context.setVariable("buyerNip", "NIP: 9721301624");
         context.setVariable("finalPrice", invoiceData.getProductList().get(0).getPrice() + " " + invoiceData.getCurrency());
         context.setVariable("currency", invoiceData.getCurrency());
-
         context.setVariable("sellerName", "Imię i nazwisko: " + invoiceData.getName());
         context.setVariable("sellerAddress",
                             "Adres: " + invoiceData.getStreet() + " " + invoiceData.getAptNumber() + ", " + invoiceData.getZip()
                                 + " " + invoiceData.getCity());
         context.setVariable("sellerEmail", "Email: " + invoiceData.getEmail());
         context.setVariable("invoiceData", invoiceData);
+        context.setVariable("product",product);
         context.setVariable("signature_file", signature_blob);
-        context.setVariable("invoiceNumber", "Sale agreement nr " + number + "-" + getCurrentMonth());
+        context.setVariable("invoiceNumber", "Sale agreement nr " + product.getNumber() + "-" + getCurrentMonth());
         processedHtml = templateEngine.process("invoice_template", context);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -92,6 +97,10 @@ public class DocumentService {
         renderer.createPDF(out);
 
         String filePath = invoicePath + invoiceData.getName() + fileNumber + ".pdf";
+        product.setPath(filePath);
+        productRepository.save(product);
+
+
 
         Path directoryPath = Paths.get(invoicePath);
         try {

@@ -2,12 +2,15 @@ package codepred.documents;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,8 +42,15 @@ public class InvoiceEntity {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    private String path;
-
     private String username;
+    private String email;
+    private String date;
+    private String name;
+    private String paymentMethod;
+    private String currency;
+
+    @OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
+    private List<Product> products;
+
 
 }
