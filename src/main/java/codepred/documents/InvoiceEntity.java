@@ -1,7 +1,8 @@
 package codepred.documents;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -42,15 +43,28 @@ public class InvoiceEntity {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    @Column(name = "username")
     private String username;
+
+    @Column(name = "email")
     private String email;
-    private String date;
+
+    @Column(name = "date")
+    private Date date;
+
+    @Column(name = "customer_name")
     private String name;
+
+    @Column(name = "payment_method")
     private String paymentMethod;
+
+    @Column(name = "currency")
     private String currency;
 
-    @OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
-    private List<Product> products;
-
+    @OneToMany(
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<Product> products = new ArrayList<>();
 
 }

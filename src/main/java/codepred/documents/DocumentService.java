@@ -1,9 +1,14 @@
 package codepred.documents;
 
-import codepred.common.util.NumberService;
+import static codepred.common.DateUtil.getCurrentMonth;
+
+import codepred.common.NumberService;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -12,11 +17,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
-import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.stream.Collectors;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -30,33 +41,18 @@ public class DocumentService {
     private TemplateEngine templateEngine;
 
     @Autowired
-    private InvoiceRepository invoiceRepository;
+    private NumberService numberService;
 
     @Autowired
     private ProductRepository productRepository;
 
-    @Autowired
-    private NumberService numberService;
-
     @Value("${invoice_path}")
     private String invoicePath;
 
-    public InvoiceEntity saveInvoice(InvoiceData invoiceData) {
-        InvoiceEntity invoice = new InvoiceEntity();
-        invoice.setUsername(invoiceData.getUsername());
-        invoice.setCreatedAt(LocalDateTime.now());
-        invoice.setProducts(invoiceData.getProductList());
-        invoice.setEmail(invoiceData.getEmail());
-        invoice.setPaymentMethod(invoiceData.getPaymentMethod());
-        invoice.setCurrency(invoiceData.getCurrency());
-        invoice.setName(invoiceData.getName());
-        return invoiceRepository.save(invoice);
-    }
-
-    public byte[] generateInvoice(InvoiceData invoiceData, Product product, InvoiceEntity invoice, String signature_blob, String username, int fileNumber) throws IOException, DocumentException {
+    public byte[] generateInvoiceDocument(InvoiceData invoiceData, Product product, String signature_blob, int fileNumber) throws IOException, DocumentException {
         Context context = new Context();
         String processedHtml;
-        product.setNumber(numberService.generateID());
+        product.setUksNumber(numberService.generateID());
 
         String paymentType = null;
         if(invoiceData.getPaymentMethod().equals("transfer")){
@@ -89,7 +85,7 @@ public class DocumentService {
         context.setVariable("invoiceData", invoiceData);
         context.setVariable("product",product);
         context.setVariable("signature_file", signature_blob);
-        context.setVariable("invoiceNumber", "Sale agreement nr " + product.getNumber() + "-" + getCurrentMonth());
+        context.setVariable("invoiceNumber", "Sale agreement nr " + product.getUksNumber() + "-" + getCurrentMonth());
         processedHtml = templateEngine.process("invoice_template", context);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -97,10 +93,9 @@ public class DocumentService {
         renderer.createPDF(out);
 
         String filePath = invoicePath + invoiceData.getName() + fileNumber + ".pdf";
-        product.setPath(filePath);
+        product.setUksPath(filePath);
+        product.setUksFileNumber(fileNumber);
         productRepository.save(product);
-
-
 
         Path directoryPath = Paths.get(invoicePath);
         try {
@@ -132,11 +127,26 @@ public class DocumentService {
         return renderer;
     }
 
-    public int getCurrentMonth() {
-        LocalDate currentDate = LocalDate.now();
-        Month currentMonth = currentDate.getMonth();
-        int monthValue = currentMonth.getValue();
-        return monthValue;
+    public String generateMonthInvoice(MonthlyUksData monthlyUksData) throws IOException {
+        final var fileName = monthlyUksData.getMonth() + "-" + monthlyUksData.getYear() + ".pdf";
+        List<Product> productList = productRepository.findAllById(monthlyUksData.getProductList());
+        List<String> uksFilePath = productList.stream().map(Product::getUksPath).collect(Collectors.toList());
+
+        generateMonthInvoicePdf(uksFilePath, fileName);
+        return fileName;
+    }
+
+    public String generateMonthInvoicePdf(List<String> uksFilePath, String fileName) throws IOException {
+        PDFMergerUtility merger = new PDFMergerUtility();
+        for (String filePath : uksFilePath) {
+            merger.addSource(new File(filePath));
+        }
+
+        String outputFile = invoicePath + fileName;
+        merger.setDestinationFileName(outputFile);
+        merger.mergeDocuments();
+
+        return outputFile;
     }
 
     public byte[] download(String fileName) throws IOException {
@@ -144,5 +154,20 @@ public class DocumentService {
         return fileContent;
     }
 
+    @NotNull
+    ResponseEntity<InputStreamResource> getPdfDocument(String fileName) throws FileNotFoundException {
+        final var file = Paths.get(invoicePath, fileName);
+        if (!Files.exists(file)) {
+            return ResponseEntity.notFound().build();
+        }
+        final var headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION,
+                    "inline; filename=" + fileName);
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(new InputStreamResource(new FileInputStream(file.toFile())));
+    }
 
 }

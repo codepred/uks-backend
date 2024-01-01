@@ -1,4 +1,4 @@
-package codepred.common.util;
+package codepred.common;
 
 import java.util.Random;
 import org.springframework.stereotype.Service;

@@ -35,7 +35,7 @@ public class MailService {
 
     private final String host = "smtp.gmail.com";
 
-    public void sendEmailWithAttachment(String to, String subject, String body, List<byte[]> pdfDocuments, String name, String id) {
+    public void sendEmailWithAttachment(String to, String subject, String body, List<byte[]> pdfDocuments, String name) {
 
         try {
             Properties props = new Properties();

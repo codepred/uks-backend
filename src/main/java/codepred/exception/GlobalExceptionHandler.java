@@ -1,6 +1,6 @@
 package codepred.exception;
 
-import codepred.common.util.ResponseObject;
+import codepred.common.ResponseObject;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

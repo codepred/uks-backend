@@ -1,6 +1,6 @@
 package codepred.documents;
 
-import codepred.common.util.FileService;
+import codepred.common.FileService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -9,24 +9,20 @@ import com.lowagie.text.DocumentException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,13 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class InvoiceController {
 
-    @Value("${invoice_path}")
-    private String invoicePath;
-
     private final MailService mailService;
-    private final DocumentService pdfService;
+    private final DocumentService documentService;
     private final FileService fileService;
     private final InvoiceService invoiceService;
+
+    private final ProductRepository productRepository;
 
     @PostMapping(value = "/invoice/create-pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> sendEmail(@RequestParam("username") String username,
@@ -58,7 +53,7 @@ public class InvoiceController {
                                             @RequestParam("productList") String productListString)
         throws IOException, DocumentException {
 
-        InvoiceData invoicedata = new InvoiceData();
+        final var invoicedata = new InvoiceData();
         invoicedata.setUsername(username);
         invoicedata.setEmail(email);
         invoicedata.setDate(date);
@@ -80,12 +75,14 @@ public class InvoiceController {
         }
 
         fileService.saveFile(signaturePhoto);
-        InvoiceEntity invoice = pdfService.saveInvoice(invoicedata);
+        invoiceService.saveInvoice(invoicedata);
         List<byte[]> invoicesPdf = new ArrayList<>();
 
-        int fileNumber = 0;
+        final var fileNumberValue = productRepository.getLastUksFileNumberByClientName(name);
+        var fileNumber = (fileNumberValue != null) ? fileNumberValue + 1 : 0;
+
         for (Product product : productList) {
-            invoicesPdf.add(pdfService.generateInvoice(invoicedata, product, invoice, signaturePhoto, username, fileNumber));
+            invoicesPdf.add(documentService.generateInvoiceDocument(invoicedata, product, signaturePhoto, fileNumber));
             fileNumber++;
         }
 
@@ -94,28 +91,14 @@ public class InvoiceController {
                                             "Dziękuję za transakcję. W załączniku przesyłam umowę kupna-sprzedaży. \n \n "
                                                 + "Thank you for the transaction. Sale agreement document attached to message.",
                                             invoicesPdf,
-                                            name,
-                                            invoice.getId().toString());
-        return ResponseEntity.ok().build();
+                                            name);
+        return ResponseEntity.ok().body("Invoices was generated");
     }
-
 
     @GetMapping("/display/{fileName}")
     public ResponseEntity<InputStreamResource> displayEmail(@PathVariable("fileName") String fileName)
         throws FileNotFoundException {
-        Path file = Paths.get(invoicePath, fileName);
-
-        if (!Files.exists(file)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fileName);
-
-        return ResponseEntity.ok()
-            .headers(headers)
-            .contentType(MediaType.APPLICATION_PDF)
-            .body(new InputStreamResource(new FileInputStream(file.toFile())));
+        return documentService.getPdfDocument(fileName);
     }
 
     @GetMapping("/download/{fileName}")
@@ -124,16 +107,27 @@ public class InvoiceController {
         @ApiResponse(responseCode = "400", description = "EMAIL_DOES_NOT_EXIST"),})
     public ResponseEntity<byte[]> downloadBookmark(HttpServletRequest request, @PathVariable("fileName") String fileName)
         throws IOException {
-        byte[] invoicePdf = pdfService.download(fileName);
+        final var invoicePdf = documentService.download(fileName);
         return ResponseEntity.ok()
             .header("Content-Disposition", "attachment; filename=invoice.pdf")
             .header("Content-Type", "application/pdf")
             .body(invoicePdf);
     }
 
-    @GetMapping("/uks/all/{date}")
-    public ResponseEntity<Object> getAllInvoices(@PathVariable("date") String date){
-        return null;
+    @PostMapping("/invoice/all")
+    public ResponseEntity<Object> getAllInvoices(@RequestBody PeriodData periodData) {
+        return ResponseEntity.status(200).body(invoiceService.getAllInvoices(periodData));
+    }
+
+    @DeleteMapping("/invoice/delete/{id}")
+    public ResponseEntity<Object> deleteInvoice(@PathVariable("id") Integer id) {
+        return ResponseEntity.status(200).body(invoiceService.deleteProduct(id));
+    }
+
+    @PostMapping("/invoice/month")
+    public ResponseEntity<InputStreamResource> getMonthlyUks(@RequestBody MonthlyUksData monthlyUksData) throws IOException {
+        final var fileName = documentService.generateMonthInvoice(monthlyUksData);
+        return documentService.getPdfDocument(fileName);
     }
 
 }
