@@ -49,7 +49,7 @@ public class DocumentService {
     @Value("${invoice_path}")
     private String invoicePath;
 
-    public byte[] generateInvoiceDocument(InvoiceData invoiceData, Product product, String signature_blob, int fileNumber) throws IOException, DocumentException {
+    public byte[] generateInvoiceDocument(InvoiceData invoiceData, Product product, String signature_blob, int fileNumber, InvoiceEntity invoice) throws IOException, DocumentException {
         Context context = new Context();
         String processedHtml;
         product.setUksNumber(numberService.generateID());
@@ -95,6 +95,7 @@ public class DocumentService {
         String filePath = invoicePath + invoiceData.getName() + fileNumber + ".pdf";
         product.setUksPath(filePath);
         product.setUksFileNumber(fileNumber);
+        product.setInvoice(invoice);
         productRepository.save(product);
 
         Path directoryPath = Paths.get(invoicePath);

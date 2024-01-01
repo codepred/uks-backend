@@ -75,14 +75,14 @@ public class InvoiceController {
         }
 
         fileService.saveFile(signaturePhoto);
-        invoiceService.saveInvoice(invoicedata);
+        InvoiceEntity invoice = invoiceService.saveInvoice(invoicedata);
         List<byte[]> invoicesPdf = new ArrayList<>();
 
         final var fileNumberValue = productRepository.getLastUksFileNumberByClientName(name);
         var fileNumber = (fileNumberValue != null) ? fileNumberValue + 1 : 0;
 
         for (Product product : productList) {
-            invoicesPdf.add(documentService.generateInvoiceDocument(invoicedata, product, signaturePhoto, fileNumber));
+            invoicesPdf.add(documentService.generateInvoiceDocument(invoicedata, product, signaturePhoto, fileNumber, invoice));
             fileNumber++;
         }
 
@@ -92,7 +92,7 @@ public class InvoiceController {
                                                 + "Thank you for the transaction. Sale agreement document attached to message.",
                                             invoicesPdf,
                                             name);
-        return ResponseEntity.ok().body("Invoices was generated");
+        return ResponseEntity.ok().body("Invoices were generated");
     }
 
     @GetMapping("/display/{fileName}")

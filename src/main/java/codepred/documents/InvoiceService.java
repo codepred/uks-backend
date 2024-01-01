@@ -57,12 +57,19 @@ public class InvoiceService {
     public List<Product> getAllInvoices(PeriodData periodData){
         final var invoices = invoiceRepository.getAllIdsByMonthAndYear(periodData.getMonth(), periodData.getYear());
         final var products = productRepository.getAllProductsByInvoiceIds(invoices);
+        products.stream().forEach(p -> {
+            p.setInvoice(null);
+        });
         return products;
     }
 
     public String deleteProduct(Integer id){
         Product product = productRepository.getById(id);
+        InvoiceEntity invoice = product.getInvoice();
+        invoice.getProducts().remove(product);
+        invoiceRepository.saveAndFlush(invoice);
         fileService.deleteFile(product.getUksPath());
+        productRepository.deleteProductFromTable(id);
         productRepository.delete(product);
         return "Product was deleted";
     }
