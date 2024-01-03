@@ -61,6 +61,9 @@ public class Product {
     @Column(name = "uks_file_number")
     private Integer uksFileNumber;
 
+    @Column(name = "client_name")
+    private String clientName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id")
     private InvoiceEntity invoice;

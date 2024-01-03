@@ -96,6 +96,7 @@ public class DocumentService {
         product.setUksPath(filePath);
         product.setUksFileNumber(fileNumber);
         product.setInvoice(invoice);
+        product.setClientName(invoiceData.getName());
         productRepository.save(product);
 
         Path directoryPath = Paths.get(invoicePath);
