@@ -1,6 +1,7 @@
 package codepred.documents;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -47,6 +48,12 @@ public class Product {
 
     @Column(name = "price")
     private String price;
+
+    @Column(name = "date")
+    private Date date;
+
+    @Column(name = "currency")
+    private String currency;
 
     // TODO: Delete this field, not used
     @Column(name = "total_price")

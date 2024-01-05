@@ -1,5 +1,6 @@
 package codepred.documents;
 
+import static codepred.common.DateUtil.convertStringToDate;
 import static codepred.common.DateUtil.getCurrentMonth;
 
 import codepred.common.NumberService;
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.time.Month;
 import java.util.stream.Collectors;
@@ -97,6 +99,8 @@ public class DocumentService {
         product.setUksFileNumber(fileNumber);
         product.setInvoice(invoice);
         product.setClientName(invoiceData.getName());
+        product.setDate(convertStringToDate(invoiceData.getDate()));
+        product.setCurrency(invoiceData.getCurrency());
         productRepository.save(product);
 
         Path directoryPath = Paths.get(invoicePath);
